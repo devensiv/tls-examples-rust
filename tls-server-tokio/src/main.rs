@@ -18,7 +18,7 @@ fn error(err: String) -> io::Error {
     io::Error::new(io::ErrorKind::Other, err)
 }
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn run_server() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // First parameter is port number (optional, defaults to 9999)
     let port = match env::args().nth(1) {
