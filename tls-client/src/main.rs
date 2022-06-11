@@ -6,8 +6,6 @@ use std::net::TcpStream;
 
 use std::fs::File;
 
-use rustls_pemfile;
-
 use rustls::RootCertStore;
 
 fn main() {
