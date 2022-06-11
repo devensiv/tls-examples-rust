@@ -78,32 +78,24 @@ fn run_server() -> Result<(), Box<dyn std::error::Error>> {
 // Load public certificate from file.
 fn load_certs(filename: &str) -> io::Result<Vec<rustls::Certificate>> {
     // Open certificate file.
-    let certfile = fs::File::open(filename)
-        .map_err(|e| error(format!("failed to open {}: {}", filename, e)))?;
+    let certfile = fs::File::open(filename)?;
     let mut reader = io::BufReader::new(certfile);
 
     // Load and return certificate.
-    let certs = rustls_pemfile::certs(&mut reader)
-        .map_err(|_| error("failed to load certificate".into()))?;
+    let certs = rustls_pemfile::certs(&mut reader)?;
+
     Ok(certs.into_iter().map(rustls::Certificate).collect())
 }
 
 // Load private key from file.
 fn load_private_key(filename: &str) -> io::Result<rustls::PrivateKey> {
     // Open keyfile.
-    let keyfile = fs::File::open(filename)
-        .map_err(|e| error(format!("failed to open {}: {}", filename, e)))?;
+    let keyfile = fs::File::open(filename)?;
     let mut reader = io::BufReader::new(keyfile);
 
     // Load and return a single private key.
-    let keys = rustls_pemfile::pkcs8_private_keys(&mut reader)
-        .map_err(|_| error("failed to load private key".into()))?;
-    if keys.len() != 1 {
-        return Err(error(format!(
-            "expected a single private key. got {}",
-            keys.len()
-        )));
+    match rustls_pemfile::read_one(&mut reader)? {
+        Some(rustls_pemfile::Item::PKCS8Key(key)) => Ok(rustls::PrivateKey(key)),
+        _ => Err(error(format!("{} does not contain a key", filename))),
     }
-
-    Ok(rustls::PrivateKey(keys[0].clone()))
 }

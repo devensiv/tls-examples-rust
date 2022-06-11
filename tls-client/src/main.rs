@@ -61,17 +61,14 @@ fn main() {
     // Connection is automatically closed as it leaves scope and is cleaned up
 }
 
-// Load server certificate from file.
+// Load public certificate from file.
 fn load_certs(filename: &str) -> std::io::Result<Vec<rustls::Certificate>> {
     // Open certificate file.
-    let certfile = File::open(filename)
-        .map_err(|e| panic!("failed to open {}: {}", filename, e))
-        .unwrap();
+    let certfile = File::open(filename)?;
     let mut reader = BufReader::new(certfile);
 
     // Load and return certificate.
-    let certs = rustls_pemfile::certs(&mut reader)
-        .map_err(|_| panic!("failed to load certificate"))
-        .unwrap();
+    let certs = rustls_pemfile::certs(&mut reader)?;
+
     Ok(certs.into_iter().map(rustls::Certificate).collect())
 }
